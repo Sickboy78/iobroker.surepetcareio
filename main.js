@@ -377,18 +377,19 @@ function set_status() {
         }
     }
     for(let h = 0; h < privates.households.length; h++) {
+        let prefix = privates.households[h].name + '.devices';
        
         for(let d = 0; d < privates.devices.length; d++) {
             if (privates.devices[d].household_id ==  privates.households[h].id) {
                 if ('parent' in privates.devices[d]) {
-                    let prefix = privates.households[h].name + '.devices.' + privates.devices[d].parent.name;
+                    hierarchy = '.' + privates.devices[d].parent.name;
 					
                     // Sureflap Connect
                     if (privates.devices[d].product_id == 3 || privates.devices[d].product_id == 6) {
                         // locking status
                         let locking_mode_changed = false;
                         if (!privates_prev.devices || (privates.devices[d].status.locking.mode !== privates_prev.devices[d].status.locking.mode)) {
-                            let obj_name =  prefix + '.' + privates.devices[d].name + '.' + 'locking';
+                            let obj_name =  prefix + hierarchy + '.' + privates.devices[d].name + '.' + 'locking';
                             adapter.getObject(obj_name, function(err, obj) { 
                                 if (!obj) {
                                     adapter.setObject(obj_name, {
@@ -416,7 +417,7 @@ function set_status() {
                         // lock control
                         if (locking_mode_changed) {
                             let control_name = 'lockinside';
-                            let obj_name =  prefix + '.' + privates.devices[d].name + '.control.' + control_name;
+                            let obj_name =  prefix + hierarchy + '.' + privates.devices[d].name + '.control.' + control_name;
                             adapter.getObject(obj_name, function(err, obj) { 
                                 if (!obj) {
                                     adapter.setObject(obj_name, {
@@ -437,7 +438,7 @@ function set_status() {
 
                         if (locking_mode_changed) {
                             let control_name = 'lockoutside';
-                            let obj_name =  prefix + '.' + privates.devices[d].name + '.control.' + control_name;
+                            let obj_name =  prefix + hierarchy + '.' + privates.devices[d].name + '.control.' + control_name;
                             adapter.getObject(obj_name, function(err, obj) { 
                                 if (!obj) {
                                     adapter.setObject(obj_name, {
@@ -458,7 +459,7 @@ function set_status() {
 
                         if (locking_mode_changed) {
                             let control_name = 'lockboth';
-                            let obj_name =  prefix + '.' + privates.devices[d].name + '.control.' + control_name;
+                            let obj_name =  prefix + hierarchy + '.' + privates.devices[d].name + '.control.' + control_name;
                             adapter.getObject(obj_name, function(err, obj) { 
                                 if (!obj) {
                                     adapter.setObject(obj_name, {
@@ -482,7 +483,7 @@ function set_status() {
 
                     // battery status
                     if (!privates_prev.devices || (privates.devices[d].status.battery !== privates_prev.devices[d].status.battery)) {
-                        let obj_name =  prefix + '.' + privates.devices[d].name + '.' + 'battery';
+                        let obj_name =  prefix + hierarchy + '.' + privates.devices[d].name + '.' + 'battery';
                         adapter.getObject(obj_name, function(err, obj) { 
                             if (!obj) {
                                 adapter.setObject(obj_name, {
@@ -502,7 +503,7 @@ function set_status() {
                     }
 
                     if (!privates_prev.devices || (privates.devices[d].status.battery_percentage !== privates_prev.devices[d].status.battery_percentage)) {
-                        let obj_name =  prefix + '.' + privates.devices[d].name + '.' + 'battery_percentage';
+                        let obj_name =  prefix + hierarchy + '.' + privates.devices[d].name + '.' + 'battery_percentage';
                         adapter.getObject(obj_name, function(err, obj) { 
                             if (!obj) {
                                 adapter.setObject(obj_name, {
@@ -547,7 +548,10 @@ function set_status() {
                 }
                 // online status
                 if (!privates_prev.devices || (privates.devices[d].status.online !== privates_prev.devices[d].status.online)) {
-                    let obj_name =  prefix + '.' + privates.devices[d].name + '.' + 'online';
+					let obj_name =  prefix + '.' + privates.devices[d].name + '.' + 'online';
+					if ('parent' in privates.devices[d]) {
+						obj_name =  prefix + '.' + privates.devices[d].parent.name + '.' + privates.devices[d].name + '.' + 'online';
+					}
                     adapter.getObject(obj_name, function(err, obj) { 
                         if (!obj) {
                         adapter.setObject(obj_name, {
