@@ -297,6 +297,7 @@ function set_status() {
         adapter.setState(obj_name, privates.all_devices_online, true);
     }
 
+	// offline devices
     if (!privates_prev.offline_devices || (privates.offline_devices !== privates_prev.offline_devices)) {
         let obj_name = 'offline_devices';
         adapter.getObject(obj_name, function(err, obj) { 
@@ -317,6 +318,7 @@ function set_status() {
         adapter.setState(obj_name, privates.offline_devices.join(';'), true);
     }
 
+	// households
     for(let h = 0; h < privates.households.length; h++) {
         let prefix = privates.households[h].name + '.devices';
        
@@ -332,34 +334,57 @@ function set_status() {
                 });
             }
         });
-
+		
+		// devices in household without parent (hub)
         for(let d = 0; d < privates.devices.length; d++) {
             if (privates.devices[d].household_id ==  privates.households[h].id) {
-                let obj_name =  prefix + '.' + privates.devices[d].name;
-                adapter.getObject(obj_name, function(err, obj) { 
-                    if (!obj) {
-                        adapter.setObject(obj_name, {
-                        type: 'channel',
-                        common: {
-                            name: privates.devices[d].name,
-                            role: ''
-                        },
-                        native: {}
-                        });
-                    }
-                });
+				if (!'parent' in privates.devices[d]) {
+					let obj_name =  prefix + '.' + privates.devices[d].name;
+					adapter.getObject(obj_name, function(err, obj) { 
+						if (!obj) {
+							adapter.setObject(obj_name, {
+							type: 'channel',
+							common: {
+								name: privates.devices[d].name,
+								role: ''
+							},
+							native: {}
+							});
+						}
+					});
+				}
+            }
+        }
+		// devices in household with parent (sureflap and feeding bowl)
+        for(let d = 0; d < privates.devices.length; d++) {
+            if (privates.devices[d].household_id ==  privates.households[h].id) {
+				if ('parent' in privates.devices[d]) {
+					let obj_name =  prefix + '.' + privates.devices[d].parent.name + '.' + privates.devices[d].name;
+					adapter.getObject(obj_name, function(err, obj) { 
+						if (!obj) {
+							adapter.setObject(obj_name, {
+							type: 'channel',
+							common: {
+								name: privates.devices[d].name,
+								role: ''
+							},
+							native: {}
+							});
+						}
+					});
+				}
             }
         }
     }
     for(let h = 0; h < privates.households.length; h++) {
-        let prefix = privates.households[h].name + '.devices';
        
         for(let d = 0; d < privates.devices.length; d++) {
             if (privates.devices[d].household_id ==  privates.households[h].id) {
                 if ('parent' in privates.devices[d]) {
-                    
+                    let prefix = privates.households[h].name + '.devices.' + privates.devices[d].parent.name;
+					
                     // Sureflap Connect
-                    if (privates.devices[d].product_id == 3) {
+                    if (privates.devices[d].product_id == 3 || privates.devices[d].product_id == 6) {
                         // locking status
                         let locking_mode_changed = false;
                         if (!privates_prev.devices || (privates.devices[d].status.locking.mode !== privates_prev.devices[d].status.locking.mode)) {
