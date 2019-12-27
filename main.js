@@ -382,7 +382,7 @@ function set_status() {
         for(let d = 0; d < privates.devices.length; d++) {
             if (privates.devices[d].household_id ==  privates.households[h].id) {
                 if ('parent' in privates.devices[d]) {
-                    hierarchy = '.' + privates.devices[d].parent.name;
+                    let hierarchy = '.' + privates.devices[d].parent.name;
 					
                     // Sureflap Connect
                     if (privates.devices[d].product_id == 3 || privates.devices[d].product_id == 6) {
