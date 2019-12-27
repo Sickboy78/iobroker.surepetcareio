@@ -153,33 +153,34 @@ function build_options(path, method, token) {
 
 function do_request(tag, options, postData, callback) {
     var req = https.request(options, (res) => {
-        adapter.log.debug(tag +' statusCode: ' + res.statusMessage + '(' +  res.statusCode + ')');
-        adapter.log.debug(tag + ' headers:' + util.inspect(res.headers, false, null, true /* enable colors */));
+        adapter.log.silly(tag +' statusCode: ' + res.statusMessage + '(' +  res.statusCode + ')');
+        adapter.log.silly(tag + ' headers:' + util.inspect(res.headers, false, null, true /* enable colors */));
     
         if (res.statusCode !== 200) {
-            adapter.log.debug("status code not OK!");
+            adapter.log.debug("status code not OK " + '(' +  res.statusCode + ')! retrying in 5 seconds.');
             setTimeout(do_login, 5*1000);
-        }
+        } else {
 
-        var data = [];
-        res.on('data', (chunk) => {
-            data.push(chunk);
-        });
-        res.on('end', () => {
-            try {
-                var obj = JSON.parse(data.join(''));
-                adapter.log.debug(util.inspect(obj, false, null, true /* enable colors */));
-                callback(obj);
-            } catch(err) {
-                adapter.log.debug(err.message);
-                adapter.log.debug('error in ' + data.toString());
-                setTimeout(do_login, 5*1000);
-            }
-        });
+			var data = [];
+			res.on('data', (chunk) => {
+				data.push(chunk);
+			});
+			res.on('end', () => {
+				try {
+					var obj = JSON.parse(data.join(''));
+					adapter.log.debug('JSon response: ' + util.inspect(obj, false, null, true /* enable colors */));
+					callback(obj);
+				} catch(err) {
+					adapter.log.debug(err.message);
+					adapter.log.debug('JSon parse error in ' + data.toString() + '. retrying in 5 seconds.');
+					setTimeout(do_login, 5*1000);
+				}
+			});
+		}
     });
 
     req.on('error', (e) => {
-        adapter.log.error(e);
+        adapter.log.error('Request error: ' + e + '. retrying in 5 seconds.');
         setTimeout(do_login, 5*1000);
     });
 
@@ -192,7 +193,7 @@ function do_login() {
         adapter.log.info('not connected...');
         privates = {};
         numberOfLogins++;
-        console.info('trying to login (' + numberOfLogins + ')...');
+        adapter.log.debug('trying to login (' + numberOfLogins + ')');
         login(adapter.config.username, adapter.config.password, get_household);
     });    
 }
@@ -203,7 +204,7 @@ function login(username, password, callback) {
 
   do_request('login', options, postData, function(obj) {
     if (obj == undefined || obj.data == undefined || !('token' in obj.data)) {
-        adapter.log.info('no token in adapter, retrying login in 5 secs...');
+        adapter.log.info('no token in adapter. retrying in 5 seconds.');
         setTimeout(do_login, 5*1000);
     } else {
         var token = obj.data['token'];
@@ -230,7 +231,7 @@ function set_pets() {
         var name = privates.pets[i].name;
         var where = privates.pets[i].position.where;
         var since = privates.pets[i].position.since;
-        adapter.log.info(name + ' is ' + where + ' since ' + prettyMs(Date.now() - new Date(since)));
+        adapter.log.debug(name + ' is ' + where + ' since ' + prettyMs(Date.now() - new Date(since)));
 
         let household_name = '';
         for (let j = 0; j < privates.households.length;j++) {
