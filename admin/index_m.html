@@ -31,27 +31,9 @@
     } </style>
 <!-- you have to define 2 functions in the global scope: -->
 <script type="text/javascript">
-    function start(token, callback) {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', "https://app.api.surehub.io/api/me/start", true);
-        xhr.setRequestHeader("Accept", "application/json, text/plain, */*");
-        xhr.setRequestHeader("Content-Type", "application/json;charset=utf-8");
-        xhr.setRequestHeader("Authorization", "Bearer " + token);
-        
-        xhr.onreadystatechange = function () {
-            if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-                  console.log(this.responseText);
-                  var obj = JSON.parse(this.responseText);
-                  callback(obj);
-            }
-        };
-        xhr.send('');
-    }
 
+	// logs into surehub api to get auth token
     function login(settings, callback) {
-
-        $( "#households" ).hide();
-        $( "#pets" ).hide();
 
         var postData = JSON.stringify(
             { 'email_address':settings.username,'password':settings.password, 'device_id':'0'}
@@ -68,52 +50,82 @@
                   var obj = JSON.parse(this.responseText);
                   if ('token' in obj.data) {
                     console.log(obj.data.token);
-                    start(obj.data.token, callback);
+                    getSurehubData(obj.data.token, callback);
                   }
             }
         };
         xhr.send(postData);
     }
+	
+	// get data from surehub with auth token
+    function getSurehubData(token, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', "https://app.api.surehub.io/api/me/start", true);
+        xhr.setRequestHeader("Accept", "application/json, text/plain, */*");
+        xhr.setRequestHeader("Content-Type", "application/json;charset=utf-8");
+        xhr.setRequestHeader("Authorization", "Bearer " + token);
+        
+        xhr.onreadystatechange = function () {
+            if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                  console.log(this.responseText);
+                  var obj = JSON.parse(this.responseText);
+                  callback(obj);
+            }
+        };
+        xhr.send('');
+    }
 
-    // the function loadSettings has to exist ...
+	// visualizes surehub data
+	function renderSureHubData(data) {
+		console.log(data);
+		var content = "<table class='bouncy'>"
+		for (var i=0 ; i < data.data.households.length; i++) {
+			content += '<tr><td>' + 'household ' +  data.data.households[i].id + '</td><td>';
+			content += data.data.households[i].name;
+			content += "<table class='bouncy'>"
+			for (var p=0 ; p < data.data.pets.length; p++) {
+				content += '<tr><td>' + p + '</td><td>' + data.data.pets[p].name +'</td><td><img id="pet_img_' + p + '"></td></tr>';
+			}
+			content += "</table>"
+			content +='</td></tr>';
+		}
+		content += "</table>"
+		$('#households').append(content);
+
+		$("table.bouncy tr:even").css("background-color", "#F4F4F8");
+		$("table.bouncy tr:odd").css("background-color", "#EFF1F1");
+
+		$( "#households" ).show( 'bounce', {}, 1000, function () {} );
+
+		for (var i=0 ; i < data.data.households.length; i++) {
+			for (let p=0 ; p < data.data.pets.length; p++) {
+				let downloadingImage = new Image();
+				downloadingImage.onload = function() {
+					console.log("downloaded (" + p + ") " + this.src);
+					var img = "pet_img_" + p;
+					var sel = $("#" + img);
+					sel.attr('src', this.src);   
+				};
+				downloadingImage.src = data.data.pets[p].photo.location;
+			}
+		}
+	}
+	
+	// shows data from surehub
+	function showSurehubData(settings) {
+        
+		$( "#households" ).hide();
+        $( "#pets" ).hide();
+
+        login(settings, renderSureHubData);
+	}
+
+    // called by the admin adapter when the settings page loads
     function load(settings, onChange) {
         // example: select elements with id=key and class=value and insert value
         if (!settings) return;
 
-        login(settings, function (data) {
-            console.log(data);
-            var content = "<table class='bouncy'>"
-            for (var i=0 ; i < data.data.households.length; i++) {
-                content += '<tr><td>' + 'household ' +  data.data.households[i].id + '</td><td>';
-                content += data.data.households[i].name;
-                content += "<table class='bouncy'>"
-                for (var p=0 ; p < data.data.pets.length; p++) {
-                    content += '<tr><td>' + p + '</td><td>' + data.data.pets[p].name +'</td><td><img id="pet_img_' + p + '"></td></tr>';
-                }
-                content += "</table>"
-                content +='</td></tr>';
-            }
-            content += "</table>"
-            $('#households').append(content);
-
-            $("table.bouncy tr:even").css("background-color", "#F4F4F8");
-            $("table.bouncy tr:odd").css("background-color", "#EFF1F1");
-
-            $( "#households" ).show( 'bounce', {}, 1000, function () {} );
-
-            for (var i=0 ; i < data.data.households.length; i++) {
-                for (let p=0 ; p < data.data.pets.length; p++) {
-                    let downloadingImage = new Image();
-                    downloadingImage.onload = function() {
-                        console.log("downloaded (" + p + ") " + this.src);
-                        var img = "pet_img_" + p;
-                        var sel = $("#" + img);
-                        sel.attr('src', this.src);   
-                    };
-                    downloadingImage.src = data.data.pets[p].photo.location;
-                }
-            }
-        });
+        showSurehubData(settings);
 
         $('.value').each(function () {            
             var $key = $(this);
@@ -136,8 +148,7 @@
         M.updateTextFields();  // function Materialize.updateTextFields(); to reinitialize all the Materialize labels on the page if you are dynamically adding inputs.
     }
 
-    // ... and the function save has to exist.
-    // you have to make sure the callback is called with the settings object as first param!
+    // called by the admin adapter when the user presses the save button
     function save(callback) {
         // example: select elements with class=value and build settings object
         var obj = {};
@@ -150,7 +161,7 @@
             }
         });
         callback(obj);
-        window.location.reload();
+		showSurehubData(obj);
     }
 </script>
 </head>
