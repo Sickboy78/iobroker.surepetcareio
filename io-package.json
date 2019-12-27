@@ -1,7 +1,7 @@
 {
     "common": {
         "name": "surepetcareio",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "news": {
             "0.0.1": {
                 "en": "initial adapter",
@@ -10,6 +10,10 @@
             "1.0.0": {
                 "en": "release V1.0.0",
                 "de": "Freigabe V1.0.0"
+            },
+            "1.0.1": {
+                "en": "release V1.0.1",
+                "de": "Freigabe V1.0.1"
             }
         },
 		"title": "Sure Petcare Flap Connect",
@@ -22,7 +26,8 @@
             "de": "Adapter für Sureflap Haustierklappe mit App-Steuerung"
         },
         "authors": [
-            "Klaus Gerlicher <klaus@klausgerlicher.de>"
+            "Klaus Gerlicher <klaus@klausgerlicher.de>",
+			"Sickboy78 <asmoday_666@gmx.de>"
         ],
         "docs": {
             "en": "docs/en/admin.md",
@@ -33,9 +38,9 @@
         "icon": "surepetcareio.png",
         "materialize": true,
         "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/kgerlich/ioBroker.surepetcareio/master/admin/surepetcareio.png",
+        "extIcon": "https://raw.githubusercontent.com/Sickboy78/ioBroker.surepetcareio/master/admin/surepetcareio.png",
         "keywords": ["surepetcareio", "pet", "door"],
-        "readme": "https://github.com/kgerlich/ioBroker.surepetcareio/blob/master/README.md",
+        "readme": "https://github.com/Sickboy78/ioBroker.surepetcareio/blob/master/README.md",
         "loglevel": "info",
         "type": "hardware",
         "license": "MIT",

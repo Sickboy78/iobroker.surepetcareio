@@ -1,6 +1,6 @@
 {
   "name": "iobroker.surepetcareio",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Adapter for Sure Petcare Flap Connect",
   "author": {
     "name": "Klaus Gerlicher",
@@ -10,9 +10,13 @@
     {
       "name": "Klaus Gerlicher",
       "email": "klaus@klausgerlicher.de"
-    }
+    },
+	{
+      "name": "Sickboy78",
+      "email": "asmoday_666@gmx.de"
+	}
   ],
-  "homepage": "https://github.com/kgerlich/iobroker.surepetcareio",
+  "homepage": "https://github.com/Sickboy78/iobroker.surepetcareio",
   "license": "MIT",
   "keywords": [
     "ioBroker",
@@ -22,7 +26,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/kgerlich/iobroker.surepetcareio"
+    "url": "https://github.com/Sickboy78/iobroker.surepetcareio"
   },
   "dependencies": {
     "pretty-ms": "^4.0.0"
@@ -37,7 +41,7 @@
     "test": "node node_modules/mocha/bin/mocha --exit"
   },
   "bugs": {
-    "url": "https://github.com/kgerlich/iobroker.surepetcareio/issues"
+    "url": "https://github.com/Sickboy78/iobroker.surepetcareio/issues"
   },
   "readmeFilename": "README.md"
 }
